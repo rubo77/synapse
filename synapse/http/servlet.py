@@ -18,11 +18,24 @@
 from synapse.api.errors import SynapseError
 
 import logging
+import simplejson
 
 logger = logging.getLogger(__name__)
 
 
 def parse_integer(request, name, default=None, required=False):
+    """Parse an integer parameter from the request string
+
+    :param request: the twisted HTTP request.
+    :param name (str): the name of the query parameter.
+    :param default: value to use if the parameter is absent, defaults to None.
+    :param required (bool): whether to raise a 400 SynapseError if the
+        parameter is absent, defaults to False.
+    :return: An int value or the default.
+    :raises
+        SynapseError if the parameter is absent and required, or if the
+            parameter is present and not an integer.
+    """
     if name in request.args:
         try:
             return int(request.args[name][0])
@@ -38,6 +51,19 @@ def parse_integer(request, name, default=None, required=False):
 
 
 def parse_boolean(request, name, default=None, required=False):
+    """Parse a boolean parameter from the request query string
+
+    :param request: the twisted HTTP request.
+    :param name (str): the name of the query parameter.
+    :param default: value to use if the parameter is absent, defaults to None.
+    :param required (bool): whether to raise a 400 SynapseError if the
+        parameter is absent, defaults to False.
+    :return: A bool value or the default.
+    :raises
+        SynapseError if the parameter is absent and required, or if the
+            parameter is present and not one of "true" or "false".
+    """
+
     if name in request.args:
         try:
             return {
@@ -60,6 +86,22 @@ def parse_boolean(request, name, default=None, required=False):
 
 def parse_string(request, name, default=None, required=False,
                  allowed_values=None, param_type="string"):
+    """Parse a string parameter from the request query string.
+
+    :param request: the twisted HTTP request.
+    :param name (str): the name of the query parameter.
+    :param default: value to use if the parameter is absent, defaults to None.
+    :param required (bool): whether to raise a 400 SynapseError if the
+        parameter is absent, defaulting to False.
+    :param allowed_values (list): List of allowed values for the string,
+        defaults to None
+    :return: A string value or the default.
+    :raises
+        SynapseError if the parameter is absent and required, or if the
+            parameter is present, must be one of a list of allowed values and
+            is not one of those allowed values.
+    """
+
     if name in request.args:
         value = request.args[name][0]
         if allowed_values is not None and value not in allowed_values:
@@ -75,6 +117,23 @@ def parse_string(request, name, default=None, required=False,
             raise SynapseError(400, message)
         else:
             return default
+
+
+def parse_json_object_from_request(request):
+    """Parse a JSON object from the body of a twisted HTTP request.
+
+    :param request: the twisted HTTP request.
+    :raises
+        SynapseError if the request body couldn't be decoded as JSON or
+            if it wasn't a JSON object.
+    """
+    try:
+        content = simplejson.loads(request.content.read())
+        if type(content) != dict:
+            raise SynapseError(400, "Content must be a JSON object.")
+        return content
+    except simplejson.JSONDecodeError:
+        raise SynapseError(400, "Content not JSON.")
 
 
 class RestServlet(object):
