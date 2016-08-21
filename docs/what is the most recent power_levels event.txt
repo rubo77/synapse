@@ -1,0 +1,35 @@
+-- what is the most recent power_levels event?
+
+select
+	events,
+	state_groups_state,
+	event_to_state_groups,
+	event_forward_extremities 
+where event_forward_extremities.room_id='$ROOM'
+ 	and event_to_state_groups.event_id=event_forward_extremities.event_id
+  and state_groups_state.state_group=event_to_state_groups.state_group
+  and state_groups_state.type='m.roompower_levels'
+  and events.event_id=state_groups_state.event_id
+
+output:
+{
+	"ban":50,
+	"events":
+	{
+		"m.room.avatar":50,
+		"m.room.canonical_alias":50,
+		"m.room.history_visibility":100,
+		"m.room.name":50,
+		"m.room.power_levels":100
+	},
+	"events_default":0,
+	"invite":0,
+	"kick":50,
+	"redact":50,
+	"state_default":50,
+	"users":
+	{
+		"@appservice_irc:matrix.eclabs.de":100
+	},
+	"users_default":0
+}
