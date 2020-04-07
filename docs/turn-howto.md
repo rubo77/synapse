@@ -45,7 +45,7 @@ The TURN daemon `coturn` is available from a variety of sources such as native p
     lines, with example values, are:
 
         use-auth-secret
-        static-auth-secret=[your secret key here]
+        static-auth-secret=n0t4ctuAllymatr1Xd0TorgSshar3d5ecret4obvIousreAsons
         realm=turn.myserver.org
 
     See `turnserver.conf` for explanations of the options. One way to generate
@@ -81,11 +81,20 @@ The TURN daemon `coturn` is available from a variety of sources such as native p
     traffic)
 
 1.  If you've configured coturn to support TLS/DTLS, generate or import your
-    private key and certificate.
+    private key and certificate and set it in `turnsurver.conf`, for a LE certificate
+    you need:
+    
+      cert=/etc/letsencrypt/live/turn.example.org/cert.pem
+      cert=/etc/letsencrypt/live/turn.example.org/fullchain.pem
+    
+    and the private key has to be symlinked:
+
+      ln -s /etc/letsencrypt/live/turn.example.org/privkey.pem /usr/local/etc/turn_server_pkey.pem
+
 
 1.  Start the turn server:
 
-         bin/turnserver -o
+         turnserver -o
 
 ## synapse Setup
 
@@ -112,7 +121,7 @@ Your home server configuration file needs the following extra keys:
 
 As an example, here is the relevant section of the config file for matrix.org:
 
-    turn_uris: [ "turn:turn.matrix.org:3478?transport=udp", "turn:turn.matrix.org:3478?transport=tcp" ]
+    turn_uris: [ "turn:turn.example.org:3478?transport=udp", "turn:turn.example.org:3478?transport=tcp" ]
     turn_shared_secret: n0t4ctuAllymatr1Xd0TorgSshar3d5ecret4obvIousreAsons
     turn_user_lifetime: 86400000
     turn_allow_guests: True
